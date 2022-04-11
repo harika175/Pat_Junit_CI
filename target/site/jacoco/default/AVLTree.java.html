@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AVLTree.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TestNew2</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">AVLTree.java</span></div><h1>AVLTree.java</h1><pre class="source lang-java linenums">
+
+<span class="fc" id="L3">public class AVLTree {</span>
+
+    public class Node {
+        int key;
+        int height;
+        Node left;
+        Node right;
+
+<span class="fc" id="L11">        Node(int key) {</span>
+<span class="fc" id="L12">            this.key = key;</span>
+<span class="fc" id="L13">        }</span>
+    }
+
+    private Node root;
+
+    public Node find(int key) {
+<span class="fc" id="L19">        Node current = root;</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">        while (current != null) {</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">            if (current.key == key) {</span>
+<span class="fc" id="L22">               break;</span>
+            }
+<span class="fc bfc" id="L24" title="All 2 branches covered.">            current = current.key &lt; key ? current.right : current.left;</span>
+        }
+<span class="fc" id="L26">        return current;</span>
+    }
+
+    public void insert(int key) {
+<span class="fc" id="L30">        root = insert(root, key);</span>
+<span class="fc" id="L31">    }</span>
+
+    public void delete(int key) {
+<span class="fc" id="L34">        root = delete(root, key);</span>
+<span class="fc" id="L35">    }</span>
+
+    public Node getRoot() {
+<span class="fc" id="L38">        return root;</span>
+    }
+
+    public int height() {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        return root == null ? -1 : root.height;</span>
+    }
+
+    private Node insert(Node node, int key) {
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (node == null) {</span>
+<span class="fc" id="L47">            return new Node(key);</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        } else if (node.key &gt; key) {</span>
+<span class="fc" id="L49">            node.left = insert(node.left, key);</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        } else if (node.key &lt; key) {</span>
+<span class="fc" id="L51">            node.right = insert(node.right, key);</span>
+        } else {
+<span class="fc" id="L53">            throw new RuntimeException(&quot;duplicate Key!&quot;);</span>
+        }
+<span class="fc" id="L55">        return rebalance(node);</span>
+    }
+
+    private Node delete(Node node, int key) {
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (node == null) {</span>
+<span class="fc" id="L60">            return node;</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        } else if (node.key &gt; key) {</span>
+<span class="fc" id="L62">            node.left = delete(node.left, key);</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        } else if (node.key &lt; key) {</span>
+<span class="fc" id="L64">            node.right = delete(node.right, key);</span>
+        } else {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (node.left == null) {</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">                node = (node.left == null) ? node.right : node.left;</span>
+            } else {
+<span class="fc" id="L69">                Node mostLeftChild = mostLeftChild(node.right);</span>
+<span class="fc" id="L70">                node.key = mostLeftChild.key;</span>
+<span class="fc" id="L71">                node.right = delete(node.right, node.key);</span>
+            }
+        }
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (node != null) {</span>
+<span class="fc" id="L75">            node = rebalance(node);</span>
+        }
+<span class="fc" id="L77">        return node;</span>
+    }
+
+    private Node mostLeftChild(Node node) {
+<span class="fc" id="L81">        Node current = node;</span>
+        /* loop down to find the leftmost leaf */
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        while (current.left != null) {</span>
+<span class="fc" id="L84">            current = current.left;</span>
+        }
+<span class="fc" id="L86">        return current;</span>
+    }
+
+    private Node rebalance(Node z) {
+<span class="fc" id="L90">        updateHeight(z);</span>
+<span class="fc" id="L91">        int balance = getBalance(z);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        if (balance &gt; 1) {</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            if (height(z.right.right) &gt; height(z.right.left)) {</span>
+<span class="fc" id="L94">                z = rotateLeft(z);</span>
+            } else {
+<span class="fc" id="L96">                z.right = rotateRight(z.right);</span>
+<span class="fc" id="L97">                z = rotateLeft(z);</span>
+            }
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        } else if (balance &lt; -1) {</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">            if (height(z.left.left) &gt; height(z.left.right)) {</span>
+<span class="fc" id="L101">                z = rotateRight(z);</span>
+            } else {
+<span class="fc" id="L103">                z.left = rotateLeft(z.left);</span>
+<span class="fc" id="L104">                z = rotateRight(z);</span>
+            }
+        }
+<span class="fc" id="L107">        return z;</span>
+    }
+
+    private Node rotateRight(Node y) {
+<span class="fc" id="L111">        Node x = y.left;</span>
+<span class="fc" id="L112">        Node z = x.right;</span>
+<span class="fc" id="L113">        x.right = y;</span>
+<span class="fc" id="L114">        y.left = z;</span>
+<span class="fc" id="L115">        updateHeight(y);</span>
+<span class="fc" id="L116">        updateHeight(x);</span>
+<span class="fc" id="L117">        return x;</span>
+    }
+
+    private Node rotateLeft(Node y) {
+<span class="fc" id="L121">        Node x = y.right;</span>
+<span class="fc" id="L122">        Node z = x.left;</span>
+<span class="fc" id="L123">        x.left = y;</span>
+<span class="fc" id="L124">        y.right = z;</span>
+<span class="fc" id="L125">        updateHeight(y);</span>
+<span class="fc" id="L126">        updateHeight(x);</span>
+<span class="fc" id="L127">        return x;</span>
+    }
+
+    private void updateHeight(Node n) {
+<span class="fc" id="L131">        n.height = 1 + Math.max(height(n.left), height(n.right));</span>
+<span class="fc" id="L132">    }</span>
+
+    private int height(Node n) {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        return n == null ? -1 : n.height;</span>
+    }
+
+    public int getBalance(Node n) {
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        return (n == null) ? 0 : height(n.right) - height(n.left);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
